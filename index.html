@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Для тебя ❤️</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.8s ease;
+    background: radial-gradient(circle at 20% 20%, #ffe4ec, #f8d7da, #ffd6e0);
+  }
+
+  /* MOODS */
+  body.mood-neutral {
+    background: radial-gradient(circle at 20% 20%, #ffe4ec, #f8d7da, #ffd6e0);
+  }
+
+  body.mood-sad {
+    background: radial-gradient(circle at 20% 20%, #e7e7ff, #cfd3ff, #c7c7ff);
+  }
+
+  body.mood-very-sad {
+    background: radial-gradient(circle at 20% 20%, #d6d6d6, #b5b5b5, #9f9f9f);
+  }
+
+  body.success {
+    background: #fff0f5;
+  }
+
+  /* HEART BACKGROUND */
+  #heartBg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    display: none;
+  }
+
+  .heartTile {
+    position: absolute;
+    font-size: 20px;
+    opacity: 0.25;
+    animation: float 6s linear forwards;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0); opacity: 0.1; }
+    100% { transform: translateY(-120px); opacity: 0; }
+  }
+
+  /* SPLASH */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: #f8d7da;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity .6s ease;
+  }
+
+  #splash.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* MAIN BOX */
+  .container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    background: rgba(255,255,255,0.8);
+    padding: 24px;
+    border-radius: 20px;
+    width: min(320px, 85vw);
+    transition: .5s;
+    transform: scale(.95);
+    opacity: 0;
+  }
+
+  .container.show {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: #ff6b81;
+    color: white;
+    font-size: 16px;
+  }
+
+  .error {
+    margin-top: 8px;
+    color: #d00000;
+    min-height: 20px;
+    font-size: 14px;
+  }
+
+  .shake { animation: shake .3s; }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-5px)}
+    50%{transform:translateX(5px)}
+    75%{transform:translateX(-5px)}
+  }
+
+  /* LETTER */
+  .letter-wrapper {
+    position: fixed;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.4);
+    z-index: 9998;
+  }
+
+  .letter {
+    background: #fffafc;
+    padding: 30px;
+    border-radius: 16px;
+    font-family: "Dancing Script", cursive;
+    font-size: 20px;
+    text-align: center;
+    width: min(320px, 85vw);
+  }
+</style>
+</head>
+
+<body class="mood-neutral">
+
+<div id="heartBg"></div>
+
+<div id="splash" onclick="startApp()">
+  <h1>Sulu Qyz, тапни на экран ✨</h1>
+</div>
+
+<div class="container" id="box">
+  <h2 id="title">Кто тебе нравится 😍</h2>
+  <input id="nameInput" />
+  <button onclick="check()">Проверить</button>
+  <div class="error" id="error"></div>
+</div>
+
+<div class="letter-wrapper" id="letterBox" onclick="openLetter()">
+  <div class="letter">💌 Нажми, чтобы открыть письмо</div>
+</div>
+
+<script>
+let heartPool = [];
+let active = false;
+let errorCount = 0;
+
+function startApp(){
+  document.getElementById('splash').classList.add('hide');
+  setTimeout(()=>document.getElementById('splash').remove(),600);
+  document.getElementById('box').classList.add('show');
+}
+
+function updateMood(){
+  document.body.classList.remove('mood-neutral','mood-sad','mood-very-sad','success');
+
+  if(errorCount === 0){
+    document.body.classList.add('mood-neutral');
+    document.getElementById('title').textContent = 'Кто тебе нравится 😍';
+  }
+  else if(errorCount === 1){
+    document.body.classList.add('mood-sad');
+    document.getElementById('title').textContent = 'Ты почти угадала... 💔';
+  }
+  else{
+    document.body.classList.add('mood-very-sad');
+    document.getElementById('title').textContent = 'Я всё ещё верю в тебя... 🥺';
+  }
+}
+
+function startHeartBackground(){
+  const bg = document.getElementById('heartBg');
+  bg.style.display = 'block';
+
+  setInterval(() => {
+    const h = document.createElement('div');
+    h.className = 'heartTile';
+    h.textContent = '❤️';
+    h.style.left = Math.random()*100 + 'vw';
+    h.style.top = Math.random()*100 + 'vh';
+    h.style.fontSize = (16 + Math.random()*20) + 'px';
+
+    bg.appendChild(h);
+    heartPool.push(h);
+
+    if(heartPool.length > 80){
+      heartPool.shift().remove();
+    }
+
+    setTimeout(()=>h.remove(),6000);
+  }, 200);
+}
+
+function check(){
+  const val = document.getElementById('nameInput').value;
+  const err = document.getElementById('error');
+  const input = document.getElementById('nameInput');
+  const box = document.getElementById('box');
+
+  if(val === 'Alibek'){
+    document.body.classList.add('success');
+    err.textContent = '';
+    document.getElementById('title').textContent = 'Все правильно! ❤️';
+
+    input.disabled = true;
+
+    if(!active){
+      active = true;
+      startHeartBackground();
+    }
+
+    setTimeout(()=>{
+      document.getElementById('letterBox').style.display = 'flex';
+    },1200);
+
+  } else {
+    errorCount++;
+    err.textContent = 'Неверное имя! Попробуй еще раз, крошка';
+
+    box.classList.add('shake');
+    setTimeout(()=>box.classList.remove('shake'),300);
+
+    updateMood();
+  }
+}
+
+function openLetter(){
+  document.getElementById('letterBox').innerHTML = `
+    <div class="letter">
+      Я рад, что встретил тебя. Ты самая красивая девушка на всем белом свете и самый вкусный чай-чак с борщом! ❤️
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
